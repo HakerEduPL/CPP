@@ -14,4 +14,5 @@ int main()
     //decrypt
     string plainText = obj->decryptString(password);
     cout << plainText << endl;
-    r
+    return 0;
+}
